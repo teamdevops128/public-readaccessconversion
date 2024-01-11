@@ -7,7 +7,7 @@ pool:
 steps:
 - script: |
     #!/bin/bash
-    ORG="your_ORG"
+    ORG="sdevops713"
     CSV_FILE="user_repo_associations.csv"
 
     # Initialize CSV file
