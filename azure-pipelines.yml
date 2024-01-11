@@ -42,7 +42,7 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)/userdetails.csv'
+    targetPath: '$(System.DefaultWorkingDirectory)/user_repo_associations.csv'
     artifact: 'myArtifacts'
     publishLocation: pipeline
   displayName: 'Publish Artifacts'
