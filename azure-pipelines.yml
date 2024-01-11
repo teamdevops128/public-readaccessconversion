@@ -5,10 +5,44 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-
-
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    #!/bin/bash
+
+    ORG="sdevops713"
+    # List of repositories
+    REPOS=("Migration-data" "Migration2-teamdevops128-Goku")  # Add your repositories here
+
+    # CSV file to store user and repository associations
+    CSV_FILE="user_repo_associations.csv"
+
+    # Initialize CSV file
+    echo "Repository,User" > $CSV_FILE
+
+    # Loop through each repository
+    for REPO in "${REPOS[@]}"; do
+    # Fetch collaborators for the repository
+    USERS=$(curl -s -H "Authorization: token $(TOKEN)" "https://api.github.com/repos/$ORG/$REPO/collaborators" | jq -r '.[].login')
+
+    #  Store user and repository associations in CSV file
+    for USER in $USERS; do
+    echo "$REPO,$USER" >> $CSV_FILE
+    done
+
+    # Modify repository permissions
+    for USER in $USERS; do
+    if [[ $USER != "teamdevops128" ]]; then
+      curl -X PUT -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+      "https://api.github.com/repos/$ORG/$REPO/collaborators/$USER" \
+      -d '{"permission":"read"}'
+     fi
+    done
+    done
+
+    echo "Process completed. Check $CSV_FILE for user and repository associations."
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(System.DefaultWorkingDirectory)/userdetails.csv'
+    artifact: 'myArtifacts'
+    publishLocation: pipeline
+  displayName: 'Publish Artifacts'
