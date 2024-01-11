@@ -7,37 +7,32 @@ pool:
 steps:
 - script: |
     #!/bin/bash
+    ORG="your_ORG"
+    CSV_FILE="user_repo_associations.csv"
 
-ORG_OR_USER="your_org_or_user"
+    # Initialize CSV file
+    echo "Repository,User" > $CSV_FILE
 
-# CSV file to store user and repository associations
-CSV_FILE="user_repo_associations.csv"
-
-# Initialize CSV file
-echo "Repository,User" > $CSV_FILE
-
-# Read repositories from CSV file and loop through each repository
-tail -n +2 repositories.csv | while IFS=',' read -r REPO; do
-  # Fetch collaborators for the repository
-  USERS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$ORG_OR_USER/$REPO/collaborators" | jq -r '.[].login')
-
-  # Store user and repository associations in CSV file
-  for USER in $USERS; do
+    # Read repositories from CSV file and loop through each repository
+    tail -n +2 repositories.csv | while IFS=',' read -r REPO; do
+    # Fetch collaborators for the repository
+    USERS=$(curl -s -H "Authorization: token $(TOKEN)" "https://api.github.com/repos/$ORG/$REPO/collaborators" | jq -r '.[].login')
+    # Store user and repository associations in CSV file
+    for USER in $USERS; do
     echo "$REPO,$USER" >> $CSV_FILE
-  done
+    done
 
-  # Modify repository permissions
-  for USER in $USERS; do
-    if [[ $USER != "except_this_user" ]]; then
-      curl -X PUT -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-      "https://api.github.com/repos/$ORG_OR_USER/$REPO/collaborators/$USER" \
+    # Modify repository permissions
+    for USER in $USERS; do
+    if [[ $USER != "teamdevops128" ]]; then
+      curl -X PUT -H "Authorization: token $(TOKEN)" -H "Accept: application/vnd.github.v3+json" \
+      "https://api.github.com/repos/$ORG/$REPO/collaborators/$USER" \
       -d '{"permission":"read"}'
     fi
-  done
-done
+    done
+    done
 
-echo "Process completed. Check $CSV_FILE for user and repository associations."
-
+    echo "Process completed. Check $CSV_FILE for user and repository associations."
 
 - task: PublishPipelineArtifact@1
   inputs:
