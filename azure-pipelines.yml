@@ -7,14 +7,14 @@ pool:
 steps:
 - script: |
     #!/bin/bash
-    ORG="your_ORG"
+    ORG="sdevops713"
     CSV_FILE="user_repo_associations.csv"
 
     # Initialize CSV file
     echo "Repository,User" > $CSV_FILE
 
     # Read repositories from CSV file and loop through each repository
-    tail -n +2 repositories.csv | while IFS=',' read -r REPO; do
+    tail -n +2 repositories.csv.xlsx | while IFS=',' read -r REPO; do
     # Fetch collaborators for the repository
     USERS=$(curl -s -H "Authorization: token $(TOKEN)" "https://api.github.com/repos/$ORG/$REPO/collaborators" | jq -r '.[].login')
     # Store user and repository associations in CSV file
